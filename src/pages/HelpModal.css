@@ -1,0 +1,116 @@
+.help-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(2px);
+  z-index: 9999;
+}
+
+.help-sheet {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--profile-bg, #ffffff);
+  border-radius: 20px 20px 0 0;
+  padding: 0 0 24px;
+  max-height: 85vh;
+  overflow-y: auto;
+  z-index: 10000;
+  animation: notifSlideUp 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.help-handle {
+  width: 36px;
+  height: 4px;
+  background: var(--profile-border, #e5e7eb);
+  border-radius: 999px;
+  margin: 12px auto 0;
+}
+
+.help-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  border-bottom: 1px solid var(--profile-border, #e5e7eb);
+}
+
+.help-close-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  color: var(--profile-text-muted, #6b7280);
+}
+
+.help-close-btn ion-icon {
+  font-size: 1.5rem;
+}
+
+.help-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--profile-text, #1f2937);
+  margin: 0;
+}
+
+.help-body {
+  padding: 16px;
+}
+
+.help-subtitle {
+  font-size: 0.8125rem;
+  color: var(--profile-text-muted, #6b7280);
+  margin: 0 0 16px;
+}
+
+.help-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.help-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--profile-border, #e5e7eb);
+  cursor: pointer;
+}
+
+.help-item:last-child {
+  border-bottom: none;
+}
+
+.help-item:hover {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.help-item-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.help-item-icon {
+  font-size: 1.25rem;
+}
+
+.help-item-text {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--profile-text, #1f2937);
+}
+
+.help-item-sub {
+  font-size: 0.6875rem;
+  color: var(--profile-text-muted, #6b7280);
+  margin-top: 1px;
+}
+
+.help-item-chevron {
+  font-size: 1.125rem;
+  color: var(--profile-placeholder, #9ca3af);
+}

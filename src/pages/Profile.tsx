@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { IonContent, IonIcon, IonPage } from '@ionic/react';
 import {
@@ -16,10 +16,20 @@ import {
   chatbubbleOutline,
 } from 'ionicons/icons';
 import './Profile.css';
+import NotifModal from './NotifModal';
+import EditProfileModal from './EditProfileModal';
+import LanguageModal from './LanguageModal';
+import HelpModal from './HelpModal';
+import LogoutModal from './LogoutModal';
 
 const ProfilePage: React.FC = () => {
   const location = useLocation();
   const isProfile = location.pathname === '/profile';
+  const [showNotifModal, setShowNotifModal] = useState(false);
+  const [showEditProfileModal, setShowEditProfileModal] = useState(false);
+  const [showLanguageModal, setShowLanguageModal] = useState(false);
+  const [showHelpModal, setShowHelpModal] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   return (
     <IonPage>
@@ -34,6 +44,7 @@ const ProfilePage: React.FC = () => {
                 type="button"
                 className="profile-avatar-edit"
                 aria-label="Edit profile photo"
+                onClick={() => setShowEditProfileModal(true)}
               >
                 <IonIcon icon={createOutline} />
               </button>
@@ -104,34 +115,62 @@ const ProfilePage: React.FC = () => {
             </div>
             <ul className="profile-settings-list">
               <li>
-                <a href="#edit-profile" className="profile-settings-item">
+                <button className="profile-settings-item" onClick={() => setShowEditProfileModal(true)}>
                   <span>Edit Profile</span>
                   <IonIcon icon={chevronForwardOutline} className="profile-settings-chevron" />
-                </a>
+                </button>
               </li>
               <li>
-                <a href="#language" className="profile-settings-item">
+                <button className="profile-settings-item" onClick={() => setShowLanguageModal(true)}>
                   <span>Language & Region</span>
                   <IonIcon icon={chevronForwardOutline} className="profile-settings-chevron" />
-                </a>
+                </button>
               </li>
               <li>
-                <a href="#help" className="profile-settings-item">
+                <button className="profile-settings-item" onClick={() => setShowHelpModal(true)}>
                   <span>Help Center</span>
                   <IonIcon icon={chevronForwardOutline} className="profile-settings-chevron" />
-                </a>
+                </button>
               </li>
               <li>
-                <a href="#logout" className="profile-settings-item profile-settings-item--logout">
+                <button className="profile-settings-item" onClick={() => setShowNotifModal(true)}>
+                  <span>Notification Preferences</span>
+                  <IonIcon icon={chevronForwardOutline} className="profile-settings-chevron" />
+                </button>
+              </li>
+              <li>
+                <button className="profile-settings-item profile-settings-item--logout" onClick={() => setShowLogoutModal(true)}>
                   <span>Logout</span>
                   <IonIcon icon={logOutOutline} className="profile-settings-chevron" />
-                </a>
+                </button>
               </li>
             </ul>
           </section>
 
           <div className="profile-spacer" aria-hidden />
         </div>
+
+        {/* Modals */}
+        <NotifModal 
+          isOpen={showNotifModal} 
+          onClose={() => setShowNotifModal(false)} 
+        />
+        <EditProfileModal 
+          isOpen={showEditProfileModal} 
+          onClose={() => setShowEditProfileModal(false)} 
+        />
+        <LanguageModal 
+          isOpen={showLanguageModal} 
+          onClose={() => setShowLanguageModal(false)} 
+        />
+        <HelpModal 
+          isOpen={showHelpModal} 
+          onClose={() => setShowHelpModal(false)} 
+        />
+        <LogoutModal 
+          isOpen={showLogoutModal} 
+          onClose={() => setShowLogoutModal(false)} 
+        />
 
         <footer className="profile-footer">
           <nav className="profile-nav" aria-label="Main">
