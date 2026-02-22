@@ -16,10 +16,16 @@ import {
   playOutline,
   pauseOutline,
   volumeHighOutline,
+  imageOutline,
+  trashOutline,
+  eyeOutline,
+  volumeMuteOutline,
 } from 'ionicons/icons';
 import { chatWithDeepSeek, type DeepSeekMessage } from '../utils/api';
 import AttachmentModal from './AttachmentModal';
 import VoiceRecordModal from './VoiceRecordModal';
+import CameraModal from './CameraModal';
+import ImagePreviewModal from './ImagePreviewModal';
 import './Chat.css';
 
 export interface ChatMessage {
@@ -27,9 +33,11 @@ export interface ChatMessage {
   role: 'ai' | 'user';
   content: string;
   timestamp: string;
-  type?: 'text' | 'voice';
+  type?: 'text' | 'voice' | 'image';
   audioUrl?: string;
   audioDuration?: number;
+  imageUrl?: string;
+  translationMode?: 'ocr' | 'describe' | 'ask';
 }
 
 const SYSTEM_PROMPT = `You are a friendly Filipino language tutor for the SalinTayo app. Help users translate, learn, and converse in Filipino/Tagalog. Be warm, encouraging, and concise. Use appropriate emojis sparingly.`;
@@ -55,6 +63,9 @@ const ChatPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isAttachmentModalOpen, setIsAttachmentModalOpen] = useState(false);
   const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false);
+  const [isCameraModalOpen, setIsCameraModalOpen] = useState(false);
+  const [isImagePreviewOpen, setIsImagePreviewOpen] = useState(false);
+  const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [playingVoiceId, setPlayingVoiceId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -144,6 +155,12 @@ const ChatPage: React.FC = () => {
   const handleAttachmentSelect = (type: 'camera' | 'gallery' | 'document' | 'voice' | 'location') => {
     console.log('Attachment selected:', type);
     
+    if (type === 'camera') {
+      setIsAttachmentModalOpen(false);
+      setIsCameraModalOpen(true);
+      return;
+    }
+    
     const featureMessages: Record<string, string> = {
       camera: '📷 Camera attachment feature coming soon!',
       gallery: '🖼️ Photo/video attachment feature coming soon!',
@@ -159,6 +176,52 @@ const ChatPage: React.FC = () => {
       timestamp: formatTime(),
     };
     setMessages((prev) => [...prev, userMessage]);
+  };
+
+  const handleCameraCapture = (imageData: string) => {
+    setCapturedImage(imageData);
+    setIsCameraModalOpen(false);
+    setIsImagePreviewOpen(true);
+  };
+
+  const handleImageRetake = () => {
+    setIsImagePreviewOpen(false);
+    setCapturedImage(null);
+    setIsCameraModalOpen(true);
+  };
+
+  const handleImageSend = (caption: string, translationMode: 'ocr' | 'describe' | 'ask') => {
+    if (!capturedImage) return;
+    
+    const userMessage: ChatMessage = {
+      id: Date.now().toString(),
+      role: 'user',
+      content: caption || '📷 Image for translation',
+      timestamp: formatTime(),
+      type: 'image',
+      imageUrl: capturedImage,
+      translationMode,
+    };
+    setMessages((prev) => [...prev, userMessage]);
+    setIsImagePreviewOpen(false);
+    setCapturedImage(null);
+    
+    // Simulate AI response for image
+    setIsLoading(true);
+    setTimeout(() => {
+      const aiMessage: ChatMessage = {
+        id: (Date.now() + 1).toString(),
+        role: 'ai',
+        content: translationMode === 'ocr' 
+          ? '🔍 I\'ve analyzed your image! Here\'s the translation:\n\n| Original | Translation |\n|----------|-------------|\n| Hello | Kamusta |\n| Thank you | Salamat |\n| Welcome | Maligayang pagdating |'
+          : translationMode === 'describe'
+          ? '📷 I can see a photo containing text. The image appears to show a sign or menu in Filipino/Tagalog.'
+          : '❓ I\'m analyzing the content of your image. What would you like to know about it?',
+        timestamp: formatTime(),
+      };
+      setMessages((prev) => [...prev, aiMessage]);
+      setIsLoading(false);
+    }, 2000);
   };
 
   const handleVoiceSend = (audioBlob: Blob, caption: string) => {
@@ -218,6 +281,31 @@ const ChatPage: React.FC = () => {
         </div>
       );
     }
+    
+    if (msg.type === 'image') {
+      return (
+        <div className="chat-image-message">
+          <div className="chat-image-stars">⭐⭐⭐</div>
+          {msg.imageUrl && (
+            <div className="chat-image-thumbnail">
+              <img src={msg.imageUrl} alt="User upload" />
+            </div>
+          )}
+          <p className="chat-image-caption">"{msg.content}"</p>
+          <div className="chat-image-actions">
+            <button className="chat-image-view-btn">
+              <IonIcon icon={eyeOutline} />
+              <span>View Full Image</span>
+            </button>
+            <button className="chat-image-delete-btn">
+              <IonIcon icon={trashOutline} />
+              <span>Delete</span>
+            </button>
+          </div>
+        </div>
+      );
+    }
+    
     return <p className="chat-message__text">{msg.content}</p>;
   };
 
@@ -276,7 +364,7 @@ const ChatPage: React.FC = () => {
             {messages.map((msg) => (
               <div
                 key={msg.id}
-                className={`chat-message chat-message--${msg.role} ${msg.type === 'voice' ? 'chat-message--voice' : ''}`}
+                className={`chat-message chat-message--${msg.role} ${msg.type === 'voice' ? 'chat-message--voice' : ''} ${msg.type === 'image' ? 'chat-message--image' : ''}`}
                 data-role={msg.role}
               >
                 <div className="chat-message__avatar">
@@ -284,6 +372,8 @@ const ChatPage: React.FC = () => {
                     <IonIcon icon={chatbubbleEllipsesOutline} aria-hidden />
                   ) : msg.type === 'voice' ? (
                     <IonIcon icon={volumeHighOutline} aria-hidden />
+                  ) : msg.type === 'image' ? (
+                    <IonIcon icon={imageOutline} aria-hidden />
                   ) : (
                     <IonIcon icon={personCircleOutline} aria-hidden />
                   )}
@@ -386,6 +476,26 @@ const ChatPage: React.FC = () => {
         isOpen={isVoiceModalOpen}
         onClose={() => setIsVoiceModalOpen(false)}
         onSendVoice={handleVoiceSend}
+      />
+
+      <CameraModal
+        isOpen={isCameraModalOpen}
+        onClose={() => setIsCameraModalOpen(false)}
+        onCapture={handleCameraCapture}
+        onOpenGallery={() => {
+          setIsCameraModalOpen(false);
+        }}
+      />
+
+      <ImagePreviewModal
+        isOpen={isImagePreviewOpen}
+        imageData={capturedImage}
+        onClose={() => {
+          setIsImagePreviewOpen(false);
+          setCapturedImage(null);
+        }}
+        onRetake={handleImageRetake}
+        onSend={handleImageSend}
       />
     </IonPage>
   );

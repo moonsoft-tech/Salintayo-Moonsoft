@@ -1,65 +1,61 @@
-/* ============================================================
-   NotifModal.css
-   Notification Preferences bottom-sheet modal styles
-   ============================================================ */
+/* ===== NotifModal.css - Popup Design ===== */
 
-/* Backdrop */
 .notif-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.45);
-  backdrop-filter: blur(2px);
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
   z-index: 9999;
-  animation: notifFadeIn 0.2s ease-out;
+  animation: popupFadeIn 0.2s ease-out;
 }
 
-@keyframes notifFadeIn {
+.notif-sheet {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 0;
+  width: 90%;
+  max-width: 400px;
+  max-height: 85vh;
+  overflow-y: auto;
+  z-index: 10000;
+  animation: popupScaleIn 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+@keyframes popupFadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
 }
 
-/* Bottom Sheet */
-.notif-sheet {
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: var(--profile-bg, #ffffff);
-  border-radius: 20px 20px 0 0;
-  padding: 0 0 24px;
-  max-height: 85vh;
-  overflow-y: auto;
-  z-index: 10000;
-  animation: notifSlideUp 0.3s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-@keyframes notifSlideUp {
+@keyframes popupScaleIn {
   from {
-    transform: translateY(100%);
     opacity: 0;
+    transform: translate(-50%, -50%) scale(0.9);
   }
   to {
-    transform: translateY(0);
     opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
   }
 }
 
-/* Drag handle */
 .notif-handle {
   width: 36px;
   height: 4px;
-  background: var(--profile-border, #e5e7eb);
+  background: #e5e7eb;
   border-radius: 999px;
   margin: 12px auto 0;
 }
 
-/* Header */
 .notif-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 16px 12px;
-  border-bottom: 1px solid var(--profile-border, #e5e7eb);
+  padding: 16px;
+  border-bottom: 1px solid #e5e7eb;
 }
 
 .notif-header__left {
@@ -70,13 +66,13 @@
 
 .notif-header__icon {
   font-size: 1.25rem;
-  color: var(--profile-primary, #0047ab);
+  color: #0047ab;
 }
 
 .notif-header__title {
   font-size: 1rem;
   font-weight: 600;
-  color: var(--profile-text, #1f2937);
+  color: #1f2937;
   margin: 0;
 }
 
@@ -85,7 +81,7 @@
   border: none;
   cursor: pointer;
   padding: 8px;
-  color: var(--profile-text-muted, #6b7280);
+  color: #6b7280;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -95,24 +91,22 @@
   font-size: 1.5rem;
 }
 
-/* Body */
 .notif-body {
   padding: 16px;
 }
 
 .notif-description {
   font-size: 0.8125rem;
-  color: var(--profile-text-muted, #6b7280);
+  color: #6b7280;
   margin: 0 0 16px;
 }
 
-/* Toggle Row */
 .notif-toggle-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 14px 0;
-  border-bottom: 1px solid var(--profile-border, #e5e7eb);
+  border-bottom: 1px solid #e5e7eb;
 }
 
 .notif-toggle-row--last {
@@ -122,10 +116,9 @@
 .notif-toggle-label {
   font-size: 0.875rem;
   font-weight: 500;
-  color: var(--profile-text, #1f2937);
+  color: #1f2937;
 }
 
-/* Toggle Switch */
 .notif-toggle {
   position: relative;
   width: 48px;
@@ -138,11 +131,11 @@
 }
 
 .notif-toggle--off {
-  background: var(--profile-border, #e5e7eb);
+  background: #e5e7eb;
 }
 
 .notif-toggle--on {
-  background: var(--profile-red, #dc2626);
+  background: #dc2626;
 }
 
 .notif-toggle__thumb {
@@ -161,17 +154,16 @@
   transform: translateX(20px);
 }
 
-/* Done Button */
 .notif-done-btn {
   display: block;
   width: 100%;
   padding: 12px 16px;
   margin-top: 24px;
-  border-radius: var(--profile-radius, 10px);
+  border-radius: 10px;
   border: none;
-  background: var(--profile-primary, #0047ab);
+  background: #0047ab;
   color: white;
-  font-family: var(--profile-font, 'Poppins', sans-serif);
+  font-family: 'Poppins', sans-serif;
   font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;

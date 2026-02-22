@@ -157,7 +157,10 @@ const ProfilePage: React.FC = () => {
         />
         <EditProfileModal 
           isOpen={showEditProfileModal} 
-          onClose={() => setShowEditProfileModal(false)} 
+          onClose={() => setShowEditProfileModal(false)}
+          onSave={(data) => {
+            console.log('Profile saved:', data);
+          }}
         />
         <LanguageModal 
           isOpen={showLanguageModal} 
