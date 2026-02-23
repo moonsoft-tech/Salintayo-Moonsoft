@@ -1,0 +1,81 @@
+hello kamusta
+hi kamusta
+good morning magandang umaga
+good afternoon magandang hapon
+good evening magandang gabi
+thank you salamat
+thanks salamat
+please paki
+yes oo
+no hindi
+how are you kamusta ka
+i love you mahal kita
+goodbye paalam
+welcome maligayang pagdating
+sorry pasensya na
+excuse me pasensya
+what is your name ano ang pangalan mo
+my name is ang pangalan ko ay
+nice to meet you masaya akong makilala ka
+good night magandang gabi
+see you later kita na
+take care ingatan mo ang sarili mo
+how old are you ilang taon ka na
+i am twenty years old ako ay dalawampu ang taon
+where are you nasaan ka
+i am here nandito ako
+what are you doing ano ginagawa mo
+i am studying nag-aaral ako
+i am working nagtatrabaho ako
+i am eating kumakain ako
+i am sleeping natutulog ako
+i am going to pupunta ako
+i want to gusto ko
+i need to kailangan ko
+can you help me pwede mo ba akong tulungan
+please help me tulungan mo ako
+i dont understand hindi ko maintindihan
+can you repeat that pakiulit naman
+speak slowly mabagal naman pakiusap
+do you speak english nakakapagsalita ka ng english
+a little bit kaunti
+i am learning filipino nag-aaral ako ng filipino
+it is hard mahirap
+it is easy madali
+what does that mean ano ibig sabihin nito
+how do you say paano mo sasabihin
+translate this isalin mo ito
+what is this ano ito
+what is that ano iyan
+who are you sino ka
+where are you from saan ka galing
+i am from ako ay galing sa
+i live in nakatira ako sa
+the house bahay
+the school paaralan
+the church simbahan
+the market palengke
+the hospital ospital
+the park park
+the beach beach
+the restaurant restaurant
+the hotel hotel
+the airport airport
+water tubig
+food pagkain
+money pera
+time oras
+day araw
+week linggo
+month buwan
+year taon
+today ngayon
+tomorrow bukas
+yesterday kahapon
+morning umaga
+afternoon hapon
+evening gabi
+night gabi
+hour oras
+minute minuto
+second segundo

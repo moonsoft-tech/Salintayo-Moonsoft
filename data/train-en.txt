@@ -1,0 +1,81 @@
+hello
+hi
+good morning
+good afternoon
+good evening
+thank you
+thanks
+please
+yes
+no
+how are you
+i love you
+goodbye
+welcome
+sorry
+excuse me
+what is your name
+my name is
+nice to meet you
+good night
+see you later
+take care
+how old are you
+i am twenty years old
+where are you
+i am here
+what are you doing
+i am studying
+i am working
+i am eating
+i am sleeping
+i am going to
+i want to
+i need to
+can you help me
+please help me
+i dont understand
+can you repeat that
+speak slowly
+do you speak english
+a little bit
+i am learning filipino
+it is hard
+it is easy
+what does that mean
+how do you say
+translate this
+what is this
+what is that
+who are you
+where are you from
+i am from
+i live in
+the house
+the school
+the church
+the market
+the hospital
+the park
+the beach
+the restaurant
+the hotel
+the airport
+water
+food
+money
+time
+day
+week
+month
+year
+today
+tomorrow
+yesterday
+morning
+afternoon
+evening
+night
+hour
+minute
+second

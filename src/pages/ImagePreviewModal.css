@@ -1,0 +1,296 @@
+/* ===== ImagePreviewModal Styles - Philippine Flag Theme ===== */
+
+/* Flag Theme Colors */
+:root {
+  --flag-red: #CE1126;
+  --flag-blue: #0038A8;
+  --flag-yellow: #FCD116;
+  --flag-white: #FFFFFF;
+}
+
+/* Backdrop */
+.preview-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  z-index: 9998;
+  animation: previewFadeIn 0.2s ease-out;
+}
+
+@keyframes previewFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Modal */
+.preview-modal {
+  position: fixed;
+  inset: 0;
+  background: #000000;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  animation: previewSlideIn 0.3s ease-out;
+}
+
+@keyframes previewSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Top Bar */
+.preview-top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  padding-top: calc(16px + env(safe-area-inset-top, 0));
+  background: rgba(0, 0, 0, 0.6);
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+}
+
+.preview-retake-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  color: var(--flag-red);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+
+.preview-retake-btn:hover {
+  background: rgba(206, 17, 38, 0.2);
+}
+
+.preview-retake-btn ion-icon {
+  font-size: 1.25rem;
+}
+
+.preview-use-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  color: var(--flag-blue);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+
+.preview-use-btn:hover {
+  background: rgba(0, 56, 168, 0.2);
+}
+
+.preview-use-btn ion-icon {
+  font-size: 1.25rem;
+}
+
+/* Image Container */
+.preview-image-container {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 16px 16px;
+}
+
+.preview-image {
+  max-width: 100%;
+  max-height: 100%;
+  border-radius: 12px;
+  object-fit: contain;
+}
+
+/* Star Accents */
+.preview-star {
+  position: absolute;
+  font-size: 1.5rem;
+  opacity: 0.8;
+}
+
+.preview-star--tl {
+  top: 70px;
+  left: 20px;
+}
+
+.preview-star--tr {
+  top: 70px;
+  right: 20px;
+}
+
+.preview-star--bl {
+  bottom: 20px;
+  left: 20px;
+}
+
+.preview-star--br {
+  bottom: 20px;
+  right: 20px;
+}
+
+/* Caption Input */
+.preview-caption-container {
+  position: relative;
+  padding: 0 16px;
+  margin-bottom: 16px;
+}
+
+.preview-caption-input {
+  width: 100%;
+  padding: 14px 40px 14px 16px;
+  border: 2px solid var(--flag-blue);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--flag-white);
+  font-size: 0.9375rem;
+  font-family: 'Poppins', sans-serif;
+  outline: none;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.preview-caption-input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.preview-caption-input:focus {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: var(--flag-yellow);
+}
+
+.preview-caption-star {
+  position: absolute;
+  right: 28px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1rem;
+}
+
+/* Translation Options */
+.preview-options {
+  padding: 0 16px;
+  margin-bottom: 20px;
+}
+
+.preview-options-title {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0 0 12px;
+}
+
+.preview-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s;
+  margin-bottom: 4px;
+}
+
+.preview-option:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.preview-option--selected {
+  background: rgba(252, 209, 22, 0.15);
+}
+
+.preview-option input[type="radio"] {
+  display: none;
+}
+
+.preview-option-radio {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  flex-shrink: 0;
+  position: relative;
+}
+
+.preview-option--selected .preview-option-radio {
+  border-color: var(--flag-yellow);
+}
+
+.preview-option--selected .preview-option-radio::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--flag-yellow);
+}
+
+.preview-option-text {
+  font-size: 0.875rem;
+  color: var(--flag-white);
+}
+
+/* Send Button */
+.preview-send-container {
+  padding: 16px;
+  padding-bottom: calc(16px + env(safe-area-inset-bottom, 0));
+}
+
+.preview-send-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 16px;
+  background: var(--flag-blue);
+  border: none;
+  border-radius: 12px;
+  color: var(--flag-white);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+}
+
+.preview-send-btn:hover {
+  background: #00256c;
+  transform: scale(1.02);
+}
+
+.preview-send-btn:active {
+  transform: scale(0.98);
+}
+
+.preview-send-btn ion-icon {
+  font-size: 1.25rem;
+}
+
+/* Star icon on hover */
+.preview-send-btn:hover::after {
+  content: '⭐';
+  font-size: 0.875rem;
+  margin-left: 4px;
+}

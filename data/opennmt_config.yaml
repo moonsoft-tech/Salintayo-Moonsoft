@@ -1,0 +1,23 @@
+model_dir: models/filipino_translator
+
+data:
+  train:
+    path_src: data/train-en.txt
+    path_tgt: data/train-fil.txt
+
+vocab_size: 10000
+
+Encoder:
+  layers: 1
+  rnn_size: 256
+  word_vec_size: 256
+
+Decoder:
+  layers: 1
+  rnn_size: 256
+  word_vec_size: 256
+
+train:
+  batch_size: 16
+  max_epoch: 50
+  learning_rate: 0.001

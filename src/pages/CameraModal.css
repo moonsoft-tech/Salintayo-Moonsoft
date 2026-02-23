@@ -1,0 +1,328 @@
+/* ===== Camera Modal Styles - Philippine Flag Theme ===== */
+
+/* Flag Theme Colors */
+:root {
+  --flag-red: #CE1126;
+  --flag-blue: #0038A8;
+  --flag-yellow: #FCD116;
+  --flag-white: #FFFFFF;
+}
+
+/* Backdrop */
+.camera-backdrop {
+  position: fixed;
+  inset: 0;
+  background: #000000;
+  z-index: 9998;
+}
+
+/* Camera Modal */
+.camera-modal {
+  position: fixed;
+  inset: 0;
+  background: #000000;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  animation: cameraSlideIn 0.3s ease-out;
+}
+
+/* Top Bar */
+.camera-top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  padding-top: calc(16px + env(safe-area-inset-top, 0));
+  background: rgba(0, 0, 0, 0.6);
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+}
+
+.camera-cancel-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  color: var(--flag-red);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+
+.camera-cancel-btn:hover {
+  background: rgba(206, 17, 38, 0.2);
+}
+
+.camera-cancel-btn ion-icon {
+  font-size: 1.25rem;
+}
+
+.camera-top-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.camera-action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  background: rgba(255, 255, 255, 0.15);
+  border: none;
+  border-radius: 50%;
+  color: var(--flag-yellow);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.camera-action-btn:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: scale(1.05);
+}
+
+.camera-action-btn.active {
+  background: var(--flag-yellow);
+  color: #000000;
+}
+
+.camera-action-btn ion-icon {
+  font-size: 1.25rem;
+}
+
+/* Camera Viewport */
+.camera-viewport {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+
+.camera-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Grid Overlay */
+.camera-grid {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.camera-grid-line {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.camera-grid-line:nth-child(1) {
+  top: 33.33%;
+  left: 0;
+  right: 0;
+  height: 1px;
+}
+
+.camera-grid-line:nth-child(2) {
+  top: 66.66%;
+  left: 0;
+  right: 0;
+  height: 1px;
+}
+
+.camera-grid-line--vertical:nth-child(3) {
+  left: 33.33%;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+}
+
+.camera-grid-line--vertical:nth-child(4) {
+  left: 66.66%;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+}
+
+/* Instruction Text */
+.camera-instruction {
+  position: absolute;
+  bottom: 140px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 20px;
+  color: var(--flag-white);
+  font-size: 0.875rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.camera-instruction-star {
+  color: var(--flag-yellow);
+  font-size: 0.75rem;
+}
+
+/* Bottom Bar */
+.camera-bottom-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px 32px;
+  padding-bottom: calc(24px + env(safe-area-inset-bottom, 0));
+  background: rgba(0, 0, 0, 0.6);
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+
+/* Gallery Button - Yellow */
+.camera-gallery-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  background: rgba(252, 209, 22, 0.2);
+  border: 2px solid var(--flag-yellow);
+  border-radius: 12px;
+  color: var(--flag-yellow);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.camera-gallery-btn:hover {
+  background: var(--flag-yellow);
+  color: #000000;
+}
+
+.camera-gallery-btn:active {
+  transform: scale(0.95);
+}
+
+.camera-gallery-btn ion-icon {
+  font-size: 1.5rem;
+}
+
+/* Capture Button - Red (#CE1126) */
+.camera-capture-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  height: 72px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.15s;
+}
+
+.camera-capture-btn:active {
+  transform: scale(0.95);
+}
+
+.camera-capture-btn__outer {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: var(--flag-red);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 20px rgba(206, 17, 38, 0.5);
+  transition: all 0.2s;
+}
+
+.camera-capture-btn:hover .camera-capture-btn__outer {
+  transform: scale(1.05);
+  box-shadow: 0 0 30px rgba(206, 17, 38, 0.7);
+}
+
+.camera-capture-btn__inner {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: var(--flag-white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.camera-capture-btn__inner ion-icon {
+  font-size: 1.75rem;
+  color: var(--flag-red);
+}
+
+/* Settings Button - Blue */
+.camera-settings-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  background: rgba(0, 56, 168, 0.2);
+  border: 2px solid var(--flag-blue);
+  border-radius: 12px;
+  color: var(--flag-blue);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.camera-settings-btn:hover {
+  background: var(--flag-blue);
+  color: var(--flag-white);
+}
+
+.camera-settings-btn:active {
+  transform: scale(0.95);
+}
+
+.camera-settings-btn ion-icon {
+  font-size: 1.5rem;
+}
+
+/* Animations */
+@keyframes cameraSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Capture flash animation */
+@keyframes captureFlash {
+  0% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+.camera-capture-flash {
+  position: absolute;
+  inset: 0;
+  background: var(--flag-white);
+  animation: captureFlash 0.3s ease-out;
+  pointer-events: none;
+}

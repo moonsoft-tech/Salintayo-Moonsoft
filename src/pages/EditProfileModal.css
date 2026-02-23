@@ -1,0 +1,348 @@
+/* ===== EditProfileModal.css - Popup Design ===== */
+
+.editprofile-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  z-index: 9999;
+  animation: editprofileFadeIn 0.2s ease-out;
+}
+
+.editprofile-sheet {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 0;
+  width: 90%;
+  max-width: 400px;
+  max-height: 85vh;
+  overflow-y: auto;
+  z-index: 10000;
+  animation: editprofileScaleIn 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+@keyframes editprofileFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes editprofileScaleIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+.editprofile-handle {
+  width: 36px;
+  height: 4px;
+  background: #e5e7eb;
+  border-radius: 999px;
+  margin: 12px auto 0;
+}
+
+.editprofile-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.editprofile-close-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  color: #6b7280;
+}
+
+.editprofile-close-btn ion-icon {
+  font-size: 1.5rem;
+}
+
+.editprofile-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0;
+}
+
+.editprofile-save-btn {
+  background: #0047ab;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.editprofile-save-btn:hover {
+  background: #003d9e;
+}
+
+.editprofile-body {
+  padding: 16px;
+}
+
+/* Profile Photo Section */
+.editprofile-photo-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.editprofile-avatar-wrap {
+  position: relative;
+  display: inline-block;
+}
+
+.editprofile-avatar-bg {
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #a78bfa 0%, #0ea5e9 50%, #fbbf24 100%);
+  z-index: 0;
+}
+
+.editprofile-avatar-icon {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 80px;
+  height: 80px;
+  font-size: 80px;
+  color: #ffffff;
+  background: #ffffff;
+  border-radius: 50%;
+  border: 4px solid #ffffff;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.editprofile-photo-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #f9fafb;
+  color: #4b5563;
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.editprofile-photo-btn:hover {
+  border-color: #0047ab;
+  color: #0047ab;
+  background: rgba(0, 71, 171, 0.05);
+}
+
+.editprofile-photo-btn ion-icon {
+  font-size: 1rem;
+  width: 1rem;
+  height: 1rem;
+}
+
+/* Form Fields */
+.editprofile-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.editprofile-field {
+  display: flex;
+  flex-direction: column;
+}
+
+.editprofile-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #4b5563;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+.editprofile-optional {
+  font-weight: 400;
+  color: #9ca3af;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.editprofile-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.editprofile-input-icon {
+  position: absolute;
+  left: 12px;
+  font-size: 1.125rem;
+  width: 1.125rem;
+  height: 1.125rem;
+  color: #9ca3af;
+  z-index: 1;
+}
+
+.editprofile-input {
+  width: 100%;
+  padding: 12px 12px 12px 40px;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  background: #f9fafb;
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.875rem;
+  color: #1f2937;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  box-sizing: border-box;
+}
+
+.editprofile-input:focus {
+  outline: none;
+  border-color: #0047ab;
+  box-shadow: 0 0 0 3px rgba(0, 71, 171, 0.1);
+  background: #ffffff;
+}
+
+.editprofile-input::placeholder {
+  color: #9ca3af;
+}
+
+.editprofile-textarea-wrap {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+}
+
+.editprofile-textarea-icon {
+  position: absolute;
+  left: 12px;
+  top: 12px;
+  font-size: 1.125rem;
+  width: 1.125rem;
+  height: 1.125rem;
+  color: #9ca3af;
+  z-index: 1;
+}
+
+.editprofile-textarea {
+  width: 100%;
+  padding: 12px 12px 12px 40px;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  background: #f9fafb;
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.875rem;
+  color: #1f2937;
+  resize: vertical;
+  min-height: 80px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  box-sizing: border-box;
+}
+
+.editprofile-textarea:focus {
+  outline: none;
+  border-color: #0047ab;
+  box-shadow: 0 0 0 3px rgba(0, 71, 171, 0.1);
+  background: #ffffff;
+}
+
+.editprofile-textarea::placeholder {
+  color: #9ca3af;
+}
+
+.editprofile-char-count {
+  display: block;
+  text-align: right;
+  font-size: 0.6875rem;
+  color: #9ca3af;
+  margin-top: 4px;
+}
+
+/* Action Buttons */
+.editprofile-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.editprofile-cancel-btn {
+  flex: 1;
+  padding: 12px 16px;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  color: #4b5563;
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.editprofile-cancel-btn:hover {
+  background: #f9fafb;
+  border-color: #d1d5db;
+}
+
+.editprofile-confirm-btn {
+  flex: 1;
+  padding: 12px 16px;
+  border-radius: 10px;
+  border: none;
+  background: #0047ab;
+  color: #ffffff;
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+}
+
+.editprofile-confirm-btn:hover {
+  background: #003d9e;
+}
+
+.editprofile-confirm-btn:active {
+  transform: scale(0.98);
+}
+
+/* Scrollbar styling for the modal */
+.editprofile-sheet::-webkit-scrollbar {
+  width: 6px;
+}
+
+.editprofile-sheet::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.editprofile-sheet::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 3px;
+}
+
+.editprofile-sheet::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
