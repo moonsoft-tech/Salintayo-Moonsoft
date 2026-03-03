@@ -1,0 +1,295 @@
+/* ================================================================
+   QuickChatBubble — persistent floating chat shortcut
+   Matches SalinTayo design tokens from Home.css / Chat.css
+================================================================ */
+
+:root {
+  --qcb-primary: #0047ab;
+  --qcb-primary-end: #7c3aed;
+  --qcb-danger: #dc2626;
+  --qcb-off: #6b7280;
+  --qcb-font: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
+  --qcb-radius: 10px;
+}
+
+/* ── Bubble ─────────────────────────────────────────────────── */
+.qcb-bubble {
+  position: fixed;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 9999;
+  touch-action: none;
+  user-select: none;
+  transition: transform 0.15s ease, box-shadow 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.qcb-bubble--on {
+  background: linear-gradient(135deg, var(--qcb-primary) 0%, var(--qcb-primary-end) 100%);
+  box-shadow:
+    0 4px 14px rgba(0, 71, 171, 0.45),
+    0 2px 6px rgba(0, 0, 0, 0.18);
+}
+
+.qcb-bubble--off {
+  background: #ffffff;
+  border: 2px solid #e5e7eb;
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.12),
+    0 2px 4px rgba(0, 0, 0, 0.08);
+}
+
+.qcb-bubble:active {
+  transform: scale(0.92);
+}
+
+/* While dragging: no transition so it tracks finger exactly */
+.qcb-bubble--dragging {
+  transition: none !important;
+  transform: scale(1.08) !important;
+  cursor: grabbing;
+}
+
+.qcb-bubble--dragging.qcb-bubble--on {
+  box-shadow:
+    0 10px 32px rgba(0, 71, 171, 0.55),
+    0 4px 10px rgba(0, 0, 0, 0.22) !important;
+}
+
+/* Snap-to-edge spring after drag release */
+.qcb-bubble:not(.qcb-bubble--dragging) {
+  transition:
+    left      0.3s cubic-bezier(0.34, 1.4, 0.64, 1),
+    top       0.08s ease,
+    transform 0.15s ease,
+    box-shadow 0.2s ease;
+}
+
+/* Pulse on tap */
+.qcb-bubble--pulse {
+  animation: qcb-tap-pulse 0.32s ease forwards;
+}
+
+@keyframes qcb-tap-pulse {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.18); }
+  100% { transform: scale(0.96); }
+}
+
+/* Inner icon container */
+.qcb-bubble__inner {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.qcb-bubble__icon {
+  font-size: 1.375rem;
+  width: 1.375rem;
+  height: 1.375rem;
+  color: #ffffff;
+  pointer-events: none;
+}
+
+.qcb-bubble--off .qcb-bubble__icon {
+  color: var(--qcb-off);
+}
+
+/* Active indicator dot */
+.qcb-bubble__badge {
+  position: absolute;
+  top: -4px;
+  right: -5px;
+  width: 10px;
+  height: 10px;
+  background: #22c55e;
+  border-radius: 50%;
+  border: 2px solid #ffffff;
+  animation: qcb-badge-pop 0.3s ease;
+}
+
+@keyframes qcb-badge-pop {
+  0%   { transform: scale(0); opacity: 0; }
+  70%  { transform: scale(1.3); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* Ripple ring when enabled */
+.qcb-bubble__ripple {
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 2px solid rgba(0, 71, 171, 0.35);
+  animation: qcb-ripple 2.4s ease-out infinite;
+  pointer-events: none;
+}
+
+@keyframes qcb-ripple {
+  0%   { transform: scale(1);    opacity: 0.7; }
+  60%  { transform: scale(1.5);  opacity: 0.1; }
+  100% { transform: scale(1.5);  opacity: 0; }
+}
+
+/* ── Overlay backdrop ───────────────────────────────────────── */
+.qcb-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 10000;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: env(safe-area-inset-bottom, 0);
+  animation: qcb-overlay-in 0.22s ease;
+}
+
+@keyframes qcb-overlay-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ── Dialog card ────────────────────────────────────────────── */
+.qcb-dialog {
+  background: #ffffff;
+  border-radius: 20px 20px 0 0;
+  padding: 28px 24px 32px;
+  width: 100%;
+  max-width: 480px;
+  font-family: var(--qcb-font);
+  animation: qcb-dialog-slide 0.28s cubic-bezier(0.34, 1.4, 0.64, 1);
+}
+
+@keyframes qcb-dialog-slide {
+  from { transform: translateY(100%); opacity: 0.6; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+/* Dialog icon */
+.qcb-dialog__icon-wrap {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 18px;
+}
+
+.qcb-dialog__icon-wrap--enable {
+  background: linear-gradient(135deg, #dbeafe 0%, #ede9fe 100%);
+}
+
+.qcb-dialog__icon-wrap--disable {
+  background: #fee2e2;
+}
+
+.qcb-dialog__icon {
+  font-size: 1.75rem;
+  width: 1.75rem;
+  height: 1.75rem;
+  color: var(--qcb-primary);
+}
+
+.qcb-dialog__icon-wrap--disable .qcb-dialog__icon {
+  color: var(--qcb-danger);
+}
+
+/* Title */
+.qcb-dialog__title {
+  font-size: 1.1875rem;
+  font-weight: 700;
+  color: #111827;
+  text-align: center;
+  margin: 0 0 10px;
+  line-height: 1.3;
+}
+
+/* Description */
+.qcb-dialog__desc {
+  font-size: 0.875rem;
+  color: #4b5563;
+  text-align: center;
+  margin: 0 0 18px;
+  line-height: 1.55;
+}
+
+.qcb-dialog__desc strong {
+  color: #1f2937;
+  font-weight: 600;
+}
+
+/* Feature bullets */
+.qcb-dialog__features {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 22px;
+}
+
+.qcb-dialog__feature {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: #374151;
+}
+
+.qcb-dialog__feature ion-icon {
+  font-size: 1rem;
+  color: var(--qcb-primary);
+  flex-shrink: 0;
+}
+
+/* Action buttons */
+.qcb-dialog__actions {
+  display: flex;
+  gap: 10px;
+}
+
+.qcb-dialog__btn {
+  flex: 1;
+  height: 48px;
+  border-radius: var(--qcb-radius);
+  font-family: var(--qcb-font);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.1s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.qcb-dialog__btn:active {
+  transform: scale(0.97);
+  opacity: 0.88;
+}
+
+.qcb-dialog__btn--cancel {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.qcb-dialog__btn--confirm {
+  background: linear-gradient(135deg, var(--qcb-primary) 0%, var(--qcb-primary-end) 100%);
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(0, 71, 171, 0.3);
+}
+
+.qcb-dialog__btn--danger {
+  background: var(--qcb-danger);
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.25);
+}
