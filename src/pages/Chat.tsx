@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { IonContent, IonIcon, IonPage } from '@ionic/react';
+import { IonContent, IonIcon, IonPage, useIonViewDidEnter } from '@ionic/react';
 import {
   bookOutline,
   documentTextOutline,
@@ -18,15 +18,146 @@ import {
   volumeHighOutline,
   imageOutline,
   trashOutline,
-  eyeOutline,
-  volumeMuteOutline,
+  close,
+  add,
+  cameraOutline,
+  imagesOutline,
+  checkmark,
+  chevronBack,
+  chevronForward,
 } from 'ionicons/icons';
-import { translateWithOpenNMT } from '../utils/translationApi';
 import AttachmentModal from './AttachmentModal';
 import VoiceRecordModal from './VoiceRecordModal';
 import CameraModal from './CameraModal';
-import ImagePreviewModal from './ImagePreviewModal';
 import './Chat.css';
+
+// Type definitions for Emergency Mode (from EmergencyDialectBubble)
+interface Dialect {
+  name: string;
+  nativeName: string;
+  flag: string;
+}
+
+interface EmergencyPhrase {
+  label: string;
+  text: string;
+}
+
+// OpenRouter API configuration
+const OPENROUTER_API_KEY = import.meta.env.VITE_OPENROUTER_API_KEY;
+const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
+
+// Quick Chat language definitions (matching QuickChatBubble)
+const QUICK_CHAT_LANGUAGES: { [key: string]: { label: string; flag: string } } = {
+  tagalog: { label: 'Tagalog', flag: '🇵🇭' },
+  cebuano: { label: 'Cebuano', flag: '🌴' },
+  ilocano: { label: 'Ilocano', flag: '🏝️' },
+  hiligaynon: { label: 'Hiligaynon', flag: '🌸' },
+  bicolano: { label: 'Bicolano', flag: '🌋' },
+};
+
+// System prompt for the AI
+const SYSTEM_PROMPT = `You are SalinTayo AI, a Filipino language tutor and translator. 
+Your role is to help users learn Filipino/Tagalog by:
+- Translating English to Filipino and vice versa
+- Explaining Filipino words, phrases, and grammar
+- Providing example sentences
+- Being friendly, patient, and encouraging
+
+Always respond in a helpful and educational manner. If asked about images, analyze them and provide translations of any text you see.`;
+
+// Function to call OpenRouter API
+async function askOpenRouter(messages: { role: 'system' | 'user' | 'assistant'; content: string }[], customSystemPrompt?: string): Promise<string> {
+  if (!OPENROUTER_API_KEY || OPENROUTER_API_KEY === 'your_openrouter_api_key_here') {
+    throw new Error('OpenRouter API key not configured. Please add VITE_OPENROUTER_API_KEY to your .env file.');
+  }
+
+  // Debug: Log the API key (first few chars only for security)
+  console.log('OpenRouter API Key loaded:', OPENROUTER_API_KEY ? `${OPENROUTER_API_KEY.substring(0, 10)}...` : 'NOT LOADED');
+  console.log('Request URL:', OPENROUTER_API_URL);
+
+  const systemPrompt = customSystemPrompt || SYSTEM_PROMPT;
+
+  const response = await fetch(OPENROUTER_API_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
+      'HTTP-Referer': window.location.origin || 'http://localhost:5173',
+      'X-Title': 'SalinTayo AI',
+    },
+    body: JSON.stringify({
+      model: 'arcee-ai/trinity-large-preview:free',
+      messages: [
+        { role: 'system', content: systemPrompt },
+        ...messages
+      ],
+      max_tokens: 1000,
+      temperature: 0.7,
+      reasoning: { enabled: true }
+    }),
+  });
+
+  // Log the raw response for debugging
+  console.log('OpenRouter Response Status:', response.status);
+  console.log('OpenRouter Response OK:', response.ok);
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    console.error('OpenRouter Error Response:', errorData);
+    throw new Error(errorData.error?.message || `API request failed: ${response.status} - ${JSON.stringify(errorData)}`);
+  }
+
+  const data = await response.json();
+  console.log('OpenRouter Response Data:', JSON.stringify(data, null, 2));
+  
+  // Handle Arcee AI response with reasoning
+  const message = data.choices?.[0]?.message;
+  const content = message?.content || message?.reasoning_details || 'Sorry, I could not generate a response.';
+  
+  return content;
+}
+
+// Function to analyze images with OpenRouter vision
+async function analyzeImageWithVision(imageBase64: string, userPrompt: string): Promise<string> {
+  if (!OPENROUTER_API_KEY || OPENROUTER_API_KEY === 'your_openrouter_api_key_here') {
+    throw new Error('OpenRouter API key not configured. Please add VITE_OPENROUTER_API_KEY to your .env file.');
+  }
+
+  const response = await fetch(OPENROUTER_API_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
+      'HTTP-Referer': window.location.origin,
+      'X-Title': 'SalinTayo AI',
+    },
+    body: JSON.stringify({
+      model: 'arcee-ai/trinity-large-preview:free',
+      messages: [
+        { role: 'system', content: SYSTEM_PROMPT },
+        {
+          role: 'user',
+          content: [
+            { type: 'text', text: userPrompt || 'Analyze this image and translate any text you see to Filipino/Tagalog. Provide the translation.' },
+            { type: 'image_url', image_url: { url: imageBase64 } }
+          ]
+        }
+      ],
+      max_tokens: 1000,
+      temperature: 0.7,
+      reasoning: { enabled: true }
+    }),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error?.message || `API request failed: ${response.status}`);
+  }
+
+  const data = await response.json();
+  return data.choices?.[0]?.message?.content || 'Sorry, I could not analyze the image.';
+}
 
 export interface ChatMessage {
   id: string;
@@ -40,7 +171,17 @@ export interface ChatMessage {
   translationMode?: 'ocr' | 'describe' | 'ask';
 }
 
-const SYSTEM_PROMPT = `You are a friendly Filipino language tutor for the SalinTayo app. Help users translate, learn, and converse in Filipino/Tagalog. Be warm, encouraging, and concise. Use appropriate emojis sparingly.`;
+interface PendingImage {
+  id: string;
+  data: string;
+  caption: string;
+  selected: boolean;
+}
+
+interface LocationState {
+  emergencyDialect?: Dialect;
+  emergencyPhrases?: EmergencyPhrase[];
+}
 
 const formatTime = () =>
   new Date().toLocaleTimeString('en-US', {
@@ -56,7 +197,7 @@ const formatDuration = (seconds: number) => {
 };
 
 const ChatPage: React.FC = () => {
-  const location = useLocation();
+  const location = useLocation<LocationState>();
   const isChat = location.pathname === '/chat';
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputValue, setInputValue] = useState('');
@@ -64,12 +205,127 @@ const ChatPage: React.FC = () => {
   const [isAttachmentModalOpen, setIsAttachmentModalOpen] = useState(false);
   const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false);
   const [isCameraModalOpen, setIsCameraModalOpen] = useState(false);
-  const [isImagePreviewOpen, setIsImagePreviewOpen] = useState(false);
-  const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [playingVoiceId, setPlayingVoiceId] = useState<string | null>(null);
+  
+  // Image attachment state - Messenger/DeepSeek style
+  const [pendingImages, setPendingImages] = useState<PendingImage[]>([]);
+  const [isImageTrayOpen, setIsImageTrayOpen] = useState(false);
+  const [isFullscreenPreview, setIsFullscreenPreview] = useState(false);
+  const [previewIndex, setPreviewIndex] = useState(0);
+  const [selectMode, setSelectMode] = useState(false);
+  
+  // ── Emergency mode state ──────────────────────────────────────────────
+  const [isEmergencyMode, setIsEmergencyMode] = useState(false);
+  const [emergencyDialect, setEmergencyDialect] = useState<Dialect | null>(null);
+  const [emergencyPhrases, setEmergencyPhrases] = useState<EmergencyPhrase[]>([]);
+  
+  // ── Quick Chat mode state ─────────────────────────────────────────────
+  const [isQuickChatMode, setIsQuickChatMode] = useState(false);
+  const [quickChatLanguage, setQuickChatLanguage] = useState<string | null>(null);
+  
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const filePickerRef = useRef<HTMLInputElement>(null);
   const audioRefs = useRef<{ [key: string]: HTMLAudioElement }>({});
+
+  // ── Handle emergency dialect injection on mount ──
+  useEffect(() => {
+    const { emergencyDialect: dial, emergencyPhrases: phrases } = location.state ?? {};
+    if (!dial || !phrases) return;
+
+    setEmergencyDialect(dial);
+    setEmergencyPhrases(phrases);
+    setIsEmergencyMode(true);
+
+    // Clear the state so refreshing doesn't re-trigger
+    window.history.replaceState({}, document.title);
+  }, []);
+
+  // ── Handle Quick Chat mode from query parameters ───────────────────────
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const lang = searchParams.get('lang');
+    const quickmode = searchParams.get('quickmode');
+
+    if (lang && quickmode === 'true' && QUICK_CHAT_LANGUAGES[lang]) {
+      setQuickChatLanguage(lang);
+      setIsQuickChatMode(true);
+      
+      // Save to localStorage for persistence
+      try {
+        localStorage.setItem('salintayo_quickchat_lang', lang);
+      } catch {}
+    } else {
+      // Check localStorage for previously selected quick chat language
+      try {
+        const savedLang = localStorage.getItem('salintayo_quickchat_lang');
+        if (savedLang && QUICK_CHAT_LANGUAGES[savedLang]) {
+          setQuickChatLanguage(savedLang);
+          setIsQuickChatMode(true);
+        }
+      } catch {}
+    }
+  }, [location.search]);
+
+  // ── Generate language-specific system prompt ───────────────────────────
+  const getLanguageSystemPrompt = (langCode: string | null): string => {
+    if (!langCode || !QUICK_CHAT_LANGUAGES[langCode]) {
+      return SYSTEM_PROMPT;
+    }
+    
+    const lang = QUICK_CHAT_LANGUAGES[langCode];
+    return `You are SalinTayo AI, a Filipino language tutor and translator specializing in ${lang.label}.
+Your role is to help users learn ${lang.label} by:
+- Translating English to ${lang.label} and vice versa
+- Explaining ${lang.label} words, phrases, and grammar
+- Providing example sentences in ${lang.label}
+- Being friendly, patient, and encouraging
+
+Always respond primarily in ${lang.label} when the user communicates in English. If asked about images, analyze them and provide translations in ${lang.label}.`;
+  };
+
+  // ── Handle quick phrase click ─────────────────────────────────────────
+  const handleQuickPhraseClick = (phrase: EmergencyPhrase) => {
+    setInputValue(phrase.text);
+    // Focus on input field
+    inputRef.current?.focus();
+  };
+
+  // ── Dismiss emergency mode ───────────────────────────────────────────
+  const handleDismissEmergency = () => {
+    setIsEmergencyMode(false);
+    setEmergencyDialect(null);
+    setEmergencyPhrases([]);
+  };
+
+  // ── Dismiss Quick Chat mode ─────────────────────────────────────────────
+  const handleDismissQuickChat = () => {
+    setIsQuickChatMode(false);
+    setQuickChatLanguage(null);
+    // Clear from localStorage
+    try {
+      localStorage.removeItem('salintayo_quickchat_lang');
+    } catch {}
+  };
+
+  // Cleanup: Remove focus from any element when navigating away
+  // This prevents accessibility issues with aria-hidden on IonPage
+  useEffect(() => {
+    return () => {
+      // Blur any focused element when component unmounts
+      if (document.activeElement instanceof HTMLElement) {
+        document.activeElement.blur();
+      }
+    };
+  }, []);
+
+  // Shift focus to the first interactive element when page becomes active
+  useIonViewDidEnter(() => {
+    const firstFocusable = document.querySelector<HTMLElement>('.chat-input__field');
+    if (firstFocusable) {
+      firstFocusable.focus();
+    }
+  });
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -103,9 +359,19 @@ const ChatPage: React.FC = () => {
     setIsLoading(true);
 
     try {
-      // Use OpenNMT for translation
-      const reply = await translateWithOpenNMT(text, 'en', 'fil');
-
+      // Build conversation history (last 10 messages for context)
+      const conversationHistory = messages.slice(-10).map(msg => ({
+        role: msg.role as 'user' | 'assistant',
+        content: msg.content
+      }));
+      
+      // Add current user message to history
+      conversationHistory.push({ role: 'user', content: text });
+      
+      // Get AI response using OpenRouter with language-specific prompt
+      const systemPrompt = getLanguageSystemPrompt(quickChatLanguage);
+      const reply = await askOpenRouter(conversationHistory, systemPrompt);
+      
       const aiMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),
         role: 'ai',
@@ -118,7 +384,7 @@ const ChatPage: React.FC = () => {
       const fallbackMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),
         role: 'ai',
-        content: `Sorry, something went wrong: ${errMsg}. Please make sure the translation server is running (python translation_server.py).`,
+        content: `Sorry, something went wrong: ${errMsg}. Please check your API key configuration.`,
         timestamp: formatTime(),
       };
       setMessages((prev) => [...prev, fallbackMessage]);
@@ -143,20 +409,22 @@ const ChatPage: React.FC = () => {
   };
 
   const handleAttachmentSelect = (type: 'camera' | 'gallery' | 'document' | 'voice' | 'location') => {
-    console.log('Attachment selected:', type);
-    
     if (type === 'camera') {
       setIsAttachmentModalOpen(false);
       setIsCameraModalOpen(true);
       return;
     }
     
+    if (type === 'gallery') {
+      filePickerRef.current?.click();
+      setIsAttachmentModalOpen(false);
+      return;
+    }
+    
     const featureMessages: Record<string, string> = {
-      camera: '📷 Camera attachment feature coming soon!',
-      gallery: '🖼️ Photo/video attachment feature coming soon!',
-      document: '📄 Document attachment feature coming soon!',
-      voice: '🎤 Voice recording feature coming soon!',
-      location: '📍 Location sharing feature coming soon!',
+      document: '📄 Document attachment coming soon!',
+      voice: '🎤 Voice recording coming soon!',
+      location: '📍 Location sharing coming soon!',
     };
 
     const userMessage: ChatMessage = {
@@ -166,52 +434,146 @@ const ChatPage: React.FC = () => {
       timestamp: formatTime(),
     };
     setMessages((prev) => [...prev, userMessage]);
+    setIsAttachmentModalOpen(false);
   };
 
   const handleCameraCapture = (imageData: string) => {
-    setCapturedImage(imageData);
-    setIsCameraModalOpen(false);
-    setIsImagePreviewOpen(true);
-  };
-
-  const handleImageRetake = () => {
-    setIsImagePreviewOpen(false);
-    setCapturedImage(null);
-    setIsCameraModalOpen(true);
-  };
-
-  const handleImageSend = (caption: string, translationMode: 'ocr' | 'describe' | 'ask') => {
-    if (!capturedImage) return;
-    
-    const userMessage: ChatMessage = {
+    const newImage: PendingImage = {
       id: Date.now().toString(),
-      role: 'user',
-      content: caption || '📷 Image for translation',
-      timestamp: formatTime(),
-      type: 'image',
-      imageUrl: capturedImage,
-      translationMode,
+      data: imageData,
+      caption: '',
+      selected: false,
     };
-    setMessages((prev) => [...prev, userMessage]);
-    setIsImagePreviewOpen(false);
-    setCapturedImage(null);
-    
-    // Simulate AI response for image
-    setIsLoading(true);
-    setTimeout(() => {
-      const aiMessage: ChatMessage = {
-        id: (Date.now() + 1).toString(),
-        role: 'ai',
-        content: translationMode === 'ocr' 
-          ? '🔍 I\'ve analyzed your image! Here\'s the translation:\n\n| Original | Translation |\n|----------|-------------|\n| Hello | Kamusta |\n| Thank you | Salamat |\n| Welcome | Maligayang pagdating |'
-          : translationMode === 'describe'
-          ? '📷 I can see a photo containing text. The image appears to show a sign or menu in Filipino/Tagalog.'
-          : '❓ I\'m analyzing the content of your image. What would you like to know about it?',
-        timestamp: formatTime(),
+    setPendingImages(prev => [...prev, newImage]);
+    setIsImageTrayOpen(true);
+    setIsCameraModalOpen(false);
+  };
+
+  const handleFilePickerChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const base64 = event.target?.result as string;
+        const newImage: PendingImage = {
+          id: Date.now().toString() + i + Math.random().toString(),
+          data: base64,
+          caption: '',
+          selected: false,
+        };
+        setPendingImages(prev => [...prev, newImage]);
       };
-      setMessages((prev) => [...prev, aiMessage]);
-      setIsLoading(false);
-    }, 2000);
+      reader.readAsDataURL(file);
+    }
+    setIsImageTrayOpen(true);
+    e.target.value = '';
+  };
+
+  const handleRemoveImage = (id: string) => {
+    setPendingImages(prev => prev.filter(img => img.id !== id));
+    if (pendingImages.length <= 1) {
+      setIsImageTrayOpen(false);
+      setIsFullscreenPreview(false);
+    } else if (previewIndex >= pendingImages.length - 1) {
+      setPreviewIndex(Math.max(0, pendingImages.length - 2));
+    }
+  };
+
+  const handleToggleSelect = (id: string) => {
+    setPendingImages(prev => prev.map(img => 
+      img.id === id ? { ...img, selected: !img.selected } : img
+    ));
+  };
+
+  const handleSelectAll = () => {
+    const allSelected = pendingImages.every(img => img.selected);
+    setPendingImages(prev => prev.map(img => ({ ...img, selected: !allSelected })));
+  };
+
+  const handleDeleteSelected = () => {
+    setPendingImages(prev => prev.filter(img => !img.selected));
+    setSelectMode(false);
+    if (pendingImages.filter(img => !img.selected).length === 0) {
+      setIsImageTrayOpen(false);
+      setIsFullscreenPreview(false);
+    }
+  };
+
+  const handleUpdateCaption = (id: string, caption: string) => {
+    setPendingImages(prev => prev.map(img => 
+      img.id === id ? { ...img, caption } : img
+    ));
+  };
+
+  const handleOpenFullscreen = (index: number) => {
+    setPreviewIndex(index);
+    setIsFullscreenPreview(true);
+  };
+
+  const handleCloseFullscreen = () => {
+    setIsFullscreenPreview(false);
+  };
+
+  const handlePrevImage = () => {
+    setPreviewIndex(prev => Math.max(0, prev - 1));
+  };
+
+  const handleNextImage = () => {
+    setPreviewIndex(prev => Math.min(pendingImages.length - 1, prev + 1));
+  };
+
+  const handleAddMoreFromPreview = () => {
+    filePickerRef.current?.click();
+  };
+
+  const handleSendImages = async () => {
+    if (pendingImages.length === 0) return;
+    
+    // Store the images and caption before clearing
+    const imagesToSend = [...pendingImages];
+    const caption = inputValue.trim();
+    
+    // Add user image messages to chat
+    imagesToSend.forEach((img, index) => {
+      const userMessage: ChatMessage = {
+        id: (Date.now() + index).toString(),
+        role: 'user',
+        content: caption || `📷 Image ${index + 1}`,
+        timestamp: formatTime(),
+        type: 'image',
+        imageUrl: img.data,
+        translationMode: 'ocr',
+      };
+      setMessages(prev => [...prev, userMessage]);
+    });
+    
+    setPendingImages([]);
+    setIsImageTrayOpen(false);
+    setIsFullscreenPreview(false);
+    setSelectMode(false);
+    setInputValue('');
+    
+    setIsLoading(true);
+    
+    // Placeholder - OpenRouter vision integration coming soon
+    const aiMessage: ChatMessage = {
+      id: (Date.now() + 1000).toString(),
+      role: 'ai',
+      content: `🔍 I've analyzed your ${imagesToSend.length} image${imagesToSend.length > 1 ? 's' : ''}! (Vision analysis with OpenRouter coming soon)`,
+      timestamp: formatTime(),
+    };
+    setMessages(prev => [...prev, aiMessage]);
+    setIsLoading(false);
+  };
+
+  const handleTrayClose = () => {
+    setIsImageTrayOpen(false);
+    setIsFullscreenPreview(false);
+    setSelectMode(false);
+    setPendingImages([]);
   };
 
   const handleVoiceSend = (audioBlob: Blob, caption: string) => {
@@ -256,11 +618,9 @@ const ChatPage: React.FC = () => {
             <IonIcon icon={playingVoiceId === msg.id ? pauseOutline : playOutline} />
           </button>
           <div className="chat-voice-waveform">
-            <div className="chat-voice-waveform-bar"></div>
-            <div className="chat-voice-waveform-bar"></div>
-            <div className="chat-voice-waveform-bar"></div>
-            <div className="chat-voice-waveform-bar"></div>
-            <div className="chat-voice-waveform-bar"></div>
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="chat-voice-waveform-bar"></div>
+            ))}
           </div>
           {msg.audioDuration && (
             <span className="chat-voice-duration">{formatDuration(msg.audioDuration)}</span>
@@ -275,29 +635,22 @@ const ChatPage: React.FC = () => {
     if (msg.type === 'image') {
       return (
         <div className="chat-image-message">
-          <div className="chat-image-stars">⭐⭐⭐</div>
           {msg.imageUrl && (
             <div className="chat-image-thumbnail">
               <img src={msg.imageUrl} alt="User upload" />
             </div>
           )}
-          <p className="chat-image-caption">"{msg.content}"</p>
-          <div className="chat-image-actions">
-            <button className="chat-image-view-btn">
-              <IonIcon icon={eyeOutline} />
-              <span>View Full Image</span>
-            </button>
-            <button className="chat-image-delete-btn">
-              <IonIcon icon={trashOutline} />
-              <span>Delete</span>
-            </button>
-          </div>
+          {msg.content && msg.content !== `📷 Image` && (
+            <p className="chat-image-caption">{msg.content}</p>
+          )}
         </div>
       );
     }
     
     return <p className="chat-message__text">{msg.content}</p>;
   };
+
+  const selectedCount = pendingImages.filter(img => img.selected).length;
 
   return (
     <IonPage>
@@ -306,77 +659,134 @@ const ChatPage: React.FC = () => {
           <header className="chat-header-sticky">
             <div className="chat-header">
               <div className="chat-header__brand">
-                <IonIcon
-                  icon={chatbubbleOutline}
-                  className="chat-header__chat-icon"
-                  aria-hidden
-                />
+                <IonIcon icon={chatbubbleOutline} className="chat-header__chat-icon" aria-hidden />
                 <div className="chat-header__text">
                   <h1 className="chat-header__title">SalinTayo AI</h1>
                   <p className="chat-header__tagline">Translate. Learn. Converse.</p>
                 </div>
               </div>
-              <button
-                type="button"
-                className="chat-header__action-btn"
-                aria-label="Open chat history or options"
-              >
-                <IonIcon icon={documentOutline} aria-hidden />
+              <button className="chat-header__action-btn" aria-label="Options">
+                <IonIcon icon={documentOutline} />
               </button>
             </div>
-            <div className="chat-header__dots" role="tablist" aria-label="Page indicator">
-              <span className="chat-header__dot" aria-hidden />
-              <span className="chat-header__dot chat-header__dot--active" aria-hidden />
-              <span className="chat-header__dot" aria-hidden />
+            <div className="chat-header__dots">
+              <span className="chat-header__dot" />
+              <span className="chat-header__dot chat-header__dot--active" />
+              <span className="chat-header__dot" />
             </div>
             <hr className="chat-header__divider" />
+
+            {/* Emergency Mode Banner */}
+            {isEmergencyMode && emergencyDialect && (
+              <div className="chat-emergency-banner" role="alert" aria-live="assertive">
+                <div className="chat-emergency-banner__left">
+                  <span className="chat-emergency-banner__icon">🚨</span>
+                  <div>
+                    <span className="chat-emergency-banner__title">EMERGENCY MODE</span>
+                    <span className="chat-emergency-banner__dialect">
+                      {emergencyDialect.flag} {emergencyDialect.name} · {emergencyDialect.nativeName}
+                    </span>
+                  </div>
+                </div>
+                <button
+                  className="chat-emergency-banner__dismiss"
+                  onClick={handleDismissEmergency}
+                  aria-label="Dismiss emergency mode"
+                >
+                  ✕
+                </button>
+              </div>
+            )}
+
+            {/* Quick Chat Mode Banner */}
+            {isQuickChatMode && quickChatLanguage && QUICK_CHAT_LANGUAGES[quickChatLanguage] && !isEmergencyMode && (
+              <div className="chat-quickchat-banner" role="status" aria-live="polite">
+                <div className="chat-quickchat-banner__left">
+                  <span className="chat-quickchat-banner__icon">⚡</span>
+                  <div>
+                    <span className="chat-quickchat-banner__title">Quick Chat</span>
+                    <span className="chat-quickchat-banner__language">
+                      {QUICK_CHAT_LANGUAGES[quickChatLanguage].flag} {QUICK_CHAT_LANGUAGES[quickChatLanguage].label}
+                    </span>
+                  </div>
+                </div>
+                <button
+                  className="chat-quickchat-banner__dismiss"
+                  onClick={handleDismissQuickChat}
+                  aria-label="Exit Quick Chat mode"
+                >
+                  ✕
+                </button>
+              </div>
+            )}
+
+            {/* Emergency Quick Phrases */}
+            {isEmergencyMode && emergencyPhrases.length > 0 && (
+              <div className="chat-emergency-phrases" role="group" aria-label="Emergency phrases">
+                <p className="chat-emergency-phrases__label">Quick Phrases:</p>
+                <div className="chat-emergency-phrases__list">
+                  {emergencyPhrases.map((phrase, i) => (
+                    <button
+                      key={i}
+                      className="chat-emergency-phrase-btn"
+                      onClick={() => handleQuickPhraseClick(phrase)}
+                      title={phrase.text}
+                    >
+                      <span className="chat-emergency-phrase-btn__label">{phrase.label}</span>
+                      <span className="chat-emergency-phrase-btn__text">{phrase.text}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </header>
 
-          <section className="chat-messages" aria-label="Chat conversation">
-            {messages.length === 0 && (
+          <section className="chat-messages">
+            {messages.length === 0 && !isEmergencyMode && (
               <div className="chat-empty-state">
-                <p>Kumusta! I&apos;m your Filipino AI tutor powered by OpenNMT.</p>
-                <p>Type a message below to translate, learn, or converse in Filipino.</p>
+                {isQuickChatMode && quickChatLanguage && QUICK_CHAT_LANGUAGES[quickChatLanguage] ? (
+                  <>
+                    <p>⚡ Quick Chat Mode: {QUICK_CHAT_LANGUAGES[quickChatLanguage].flag} {QUICK_CHAT_LANGUAGES[quickChatLanguage].label}</p>
+                    <p>Start chatting and I&apos;ll respond in {QUICK_CHAT_LANGUAGES[quickChatLanguage].label}!</p>
+                  </>
+                ) : (
+                  <>
+                    <p>Kumusta! I&apos;m your Filipino AI tutor.</p>
+                    <p>Type a message or attach an image to translate.</p>
+                  </>
+                )}
               </div>
             )}
             {isLoading && (
-              <div className="chat-message chat-message--ai chat-message--loading" data-role="ai">
+              <div className="chat-message chat-message--ai" data-role="ai">
                 <div className="chat-message__avatar">
-                  <IonIcon icon={chatbubbleEllipsesOutline} aria-hidden />
+                  <IonIcon icon={chatbubbleEllipsesOutline} />
                 </div>
                 <div className="chat-message__bubble-wrap">
                   <div className="chat-message__bubble">
-                    <p className="chat-message__text chat-message__typing">Thinking...</p>
+                    <p className="chat-message__text">Thinking...</p>
                   </div>
                 </div>
               </div>
             )}
             {messages.map((msg) => (
-              <div
-                key={msg.id}
-                className={`chat-message chat-message--${msg.role} ${msg.type === 'voice' ? 'chat-message--voice' : ''} ${msg.type === 'image' ? 'chat-message--image' : ''}`}
-                data-role={msg.role}
-              >
+              <div key={msg.id} className={`chat-message chat-message--${msg.role} ${msg.type === 'image' ? 'chat-message--image' : ''}`} data-role={msg.role}>
                 <div className="chat-message__avatar">
                   {msg.role === 'ai' ? (
-                    <IonIcon icon={chatbubbleEllipsesOutline} aria-hidden />
+                    <IonIcon icon={chatbubbleEllipsesOutline} />
                   ) : msg.type === 'voice' ? (
-                    <IonIcon icon={volumeHighOutline} aria-hidden />
+                    <IonIcon icon={volumeHighOutline} />
                   ) : msg.type === 'image' ? (
-                    <IonIcon icon={imageOutline} aria-hidden />
+                    <IonIcon icon={imageOutline} />
                   ) : (
-                    <IonIcon icon={personCircleOutline} aria-hidden />
+                    <IonIcon icon={personCircleOutline} />
                   )}
                 </div>
                 <div className="chat-message__bubble-wrap">
                   <div className="chat-message__bubble">
                     {msg.role === 'ai' && (
-                      <button
-                        type="button"
-                        className="chat-message__settings"
-                        aria-label="Message options"
-                      >
-                        <IonIcon icon={settingsOutline} aria-hidden />
+                      <button className="chat-message__settings">
+                        <IonIcon icon={settingsOutline} />
                       </button>
                     )}
                     {renderMessageContent(msg)}
@@ -385,72 +795,112 @@ const ChatPage: React.FC = () => {
                 </div>
               </div>
             ))}
-            <div ref={messagesEndRef} aria-hidden />
+            <div ref={messagesEndRef} />
           </section>
 
-          <div className="chat-input-wrap">
-            <button
-              type="button"
-              className="chat-input__attach"
-              onClick={handleAttachmentClick}
-              aria-label="Attach file"
-            >
-              <IonIcon icon={attachOutline} aria-hidden />
+          {/* Hidden file input */}
+          <input
+            ref={filePickerRef}
+            type="file"
+            accept="image/*"
+            multiple
+            style={{ display: 'none' }}
+            onChange={handleFilePickerChange}
+          />
+
+          {/* Inline Image Preview — Claude-style, attached above input bar */}
+          {isImageTrayOpen && pendingImages.length > 0 && (
+            <div className="chat-inline-preview">
+              {/* Image thumbnails strip */}
+              <div className="chat-inline-preview__strip">
+                {pendingImages.map((img, index) => (
+                  <div key={img.id} className="chat-inline-preview__thumb">
+                    <img src={img.data} alt={`Preview ${index + 1}`} />
+                    <button
+                      className="chat-inline-preview__remove"
+                      onClick={() => handleRemoveImage(img.id)}
+                      aria-label="Remove image"
+                    >
+                      <IonIcon icon={close} />
+                    </button>
+                  </div>
+                ))}
+                {/* Add more */}
+                <button
+                  className="chat-inline-preview__add"
+                  onClick={() => filePickerRef.current?.click()}
+                  aria-label="Add more images"
+                >
+                  <IonIcon icon={add} />
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Input Bar */}
+          <div className={`chat-input-wrap ${isImageTrayOpen ? 'chat-input-wrap--with-preview' : ''}`}>
+            <button className="chat-input__attach" onClick={handleAttachmentClick}>
+              <IonIcon icon={attachOutline} />
             </button>
             <input
               ref={inputRef}
               type="text"
               className="chat-input__field"
-              placeholder="Type your message..."
+              placeholder={isImageTrayOpen ? "Add a caption or question..." : "Type your message..."}
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
-              onKeyDown={handleKeyDown}
-              aria-label="Message input"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  isImageTrayOpen ? handleSendImages() : handleSend();
+                }
+              }}
             />
-            <button
-              type="button"
-              className="chat-input__mic"
-              onClick={handleVoiceClick}
-              aria-label="Voice input"
-            >
-              <IonIcon icon={micOutline} aria-hidden />
+            <button className="chat-input__mic" onClick={isImageTrayOpen ? () => filePickerRef.current?.click() : handleVoiceClick}>
+              <IonIcon icon={isImageTrayOpen ? imagesOutline : micOutline} />
             </button>
-            <button
-              type="button"
-              className="chat-input__send"
-              onClick={handleSend}
-              disabled={isLoading || !inputValue.trim()}
-              aria-label="Send message"
-            >
-              <IonIcon icon={send} aria-hidden />
-            </button>
+            {isImageTrayOpen ? (
+              <button
+                className="chat-input__send chat-input__send--image"
+                onClick={handleSendImages}
+                disabled={isLoading || pendingImages.length === 0}
+              >
+                <IonIcon icon={send} />
+                {pendingImages.length > 1 && <span className="chat-input__send-badge">{pendingImages.length}</span>}
+              </button>
+            ) : (
+              <button
+                className="chat-input__send"
+                onClick={handleSend}
+                disabled={isLoading || !inputValue.trim()}
+              >
+                <IonIcon icon={send} />
+              </button>
+            )}
           </div>
         </div>
 
-        <footer className="chat-footer">
-          <nav className="chat-nav" aria-label="Main">
-            <Link to="/learn" className="chat-nav__item">
-              <IonIcon icon={bookOutline} className="chat-nav__icon" />
-              <span className="chat-nav__label">Learn</span>
+        <footer className="home-footer">
+          <nav className="home-nav" aria-label="Main">
+            <Link to="/learn" className="home-nav__item">
+              <IonIcon icon={bookOutline} className="home-nav__icon" />
+              <span className="home-nav__label">Learn</span>
             </Link>
-            <Link to="/quiz" className="chat-nav__item">
-              <IonIcon icon={documentTextOutline} className="chat-nav__icon" />
-              <span className="chat-nav__label">Quiz</span>
+            <Link to="/quiz" className="home-nav__item">
+              <IonIcon icon={documentTextOutline} className="home-nav__icon" />
+              <span className="home-nav__label">Quiz</span>
             </Link>
-            <Link to="/home" className="chat-nav__item">
-              <IonIcon icon={homeOutline} className="chat-nav__icon" />
-              <span className="chat-nav__label">Home</span>
+            <Link to="/home" className="home-nav__item">
+              <IonIcon icon={homeOutline} className="home-nav__icon" />
+              <span className="home-nav__label">Home</span>
             </Link>
-            <Link
-              to="/chat"
-              className={`chat-nav__item ${isChat ? 'chat-nav__item--active' : ''}`}
-            >
-              <IonIcon icon={chatbubbleOutline} className="chat-nav__icon" />
-              <span className="chat-nav__label">Chat</span>
+            <Link to="/chat" className={`home-nav__item ${isChat ? 'home-nav__item--active' : ''}`}>
+              <IonIcon icon={chatbubbleOutline} className="home-nav__icon" />
+              <span className="home-nav__label">Chat</span>
             </Link>
-            <Link to="/profile" className="chat-nav__item">
-              <IonIcon icon={personCircleOutline} className="chat-nav__icon" />
-              <span className="chat-nav__label">Profile</span>
+            <Link to="/profile" className="home-nav__item">
+              <IonIcon icon={personCircleOutline} className="home-nav__icon" />
+              <span className="home-nav__label">Profile</span>
             </Link>
           </nav>
         </footer>
@@ -472,23 +922,11 @@ const ChatPage: React.FC = () => {
         isOpen={isCameraModalOpen}
         onClose={() => setIsCameraModalOpen(false)}
         onCapture={handleCameraCapture}
-        onOpenGallery={() => {
-          setIsCameraModalOpen(false);
-        }}
-      />
-
-      <ImagePreviewModal
-        isOpen={isImagePreviewOpen}
-        imageData={capturedImage}
-        onClose={() => {
-          setIsImagePreviewOpen(false);
-          setCapturedImage(null);
-        }}
-        onRetake={handleImageRetake}
-        onSend={handleImageSend}
+        onOpenGallery={() => filePickerRef.current?.click()}
       />
     </IonPage>
   );
 };
 
 export default ChatPage;
+
