@@ -2,14 +2,14 @@ import { Redirect, Route } from 'react-router-dom';
 import { IonApp, IonRouterOutlet, setupIonicReact } from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
 import ProtectedRoute from './components/ProtectedRoute';
+import QuickChatBubble from './pages/QuickChatBubble';
 import Home from './pages/Home';
 import LoginPage from './pages/Login';
 import Register from './pages/Register';
 import ForgotPassword from './pages/ForgotPassword';
 import Verification from './pages/Verification';
 import NewPassword from './pages/NewPassword';
-import WelcomeSlide1 from './pages/WelcomeSlide1';
-import WelcomeSlide2 from './pages/WelcomeSlide2';
+import WelcomeSlide from './pages/WelcomeSlide';
 import Learn from './pages/Learn';
 import Quiz from './pages/Quiz';
 import Chat from './pages/Chat';
@@ -50,6 +50,7 @@ setupIonicReact();
 const App: React.FC = () => (
   <IonApp>
     <IonReactRouter>
+      <QuickChatBubble />
       <IonRouterOutlet>
         <ProtectedRoute exact path="/home">
           <Home />
@@ -70,11 +71,10 @@ const App: React.FC = () => (
           <Redirect to="/login" />
         </Route>
         <ProtectedRoute exact path="/welcome">
-          <WelcomeSlide1 />
+          <WelcomeSlide />
         </ProtectedRoute>
-        <ProtectedRoute exact path="/welcome-2">
-          <WelcomeSlide2 />
-        </ProtectedRoute>
+        
+        
         <Route exact path="/login">
           <LoginPage />
         </Route>
