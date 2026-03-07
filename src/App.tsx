@@ -9,7 +9,7 @@ import Register from './pages/Register';
 import ForgotPassword from './pages/ForgotPassword';
 import Verification from './pages/Verification';
 import NewPassword from './pages/NewPassword';
-import WelcomeSlide from './pages/WelcomeSlide';
+import WelcomeSlides from './pages/WelcomeSlides';
 import Learn from './pages/Learn';
 import Quiz from './pages/Quiz';
 import Chat from './pages/Chat';
@@ -70,11 +70,9 @@ const App: React.FC = () => (
         <Route exact path="/">
           <Redirect to="/login" />
         </Route>
-        <ProtectedRoute exact path="/welcome">
-          <WelcomeSlide />
-        </ProtectedRoute>
-        
-        
+        <Route exact path="/welcome">
+          <WelcomeSlides />
+        </Route>
         <Route exact path="/login">
           <LoginPage />
         </Route>
