@@ -1,0 +1,538 @@
+/* ─── WelcomeSlides.css ─────────────────────────────────────────────────────
+   Works inside Ionic ion-content, plain React, and standard browsers.
+   Key rules:
+   • .ws-root  — NO fixed/min height, just normal block flow + padding
+   • Scrolling is handled by the parent (ion-content or browser body)
+   • All sizing uses clamp() so it adapts from 320 px phones → tablets
+────────────────────────────────────────────────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&family=Lora:ital,wght@0,600;0,700;1,600&display=swap');
+
+/* ─── Design tokens ─────────────────────────────────────────────────────── */
+:root {
+  --ws-bg:          #FDFAF6;
+  --ws-card:        #FFFFFF;
+  --ws-subtle:      #F4F0EA;
+  --ws-tint-blue:   #E8EFFF;
+  --ws-tint-blue2:  #D0DFFF;
+  --ws-tint-red:    #FFF0F2;
+
+  --ws-ink:         #1A1410;
+  --ws-ink-2:       #4A3F35;
+  --ws-ink-3:       #8C7B6E;
+
+  --ws-blue:        #0B3D91;
+  --ws-blue-soft:   #1A56B0;
+  --ws-red:         #C41230;
+
+  --ws-border:      #E8E0D5;
+  --ws-shadow-sm:   0 2px 8px rgba(26,20,16,0.06);
+  --ws-shadow-md:   0 6px 24px rgba(26,20,16,0.10);
+
+  --ws-font:        'Nunito', 'Helvetica Neue', sans-serif;
+  --ws-font-d:      'Lora', Georgia, serif;
+
+  --ws-r-sm:   10px;
+  --ws-r-md:   16px;
+  --ws-r-lg:   20px;
+  --ws-r-pill: 100px;
+}
+
+/* ─── Scoped reset (only inside ws-root) ───────────────────────────────── */
+.ws-root *, .ws-root *::before, .ws-root *::after {
+  box-sizing: border-box;
+}
+
+/* ─── Root wrapper ──────────────────────────────────────────────────────────
+   • width: 100% so it fills its parent (ion-content, div, etc.)
+   • NO height/min-height — let content grow naturally so parent can scroll
+   • padding gives breathing room on all screen sizes
+────────────────────────────────────────────────────────────────────────────── */
+.ws-root {
+  width: 100%;
+  background: var(--ws-bg);
+  background-image:
+    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(11,61,145,0.06) 0%, transparent 70%),
+    radial-gradient(ellipse 60% 40% at 100% 100%, rgba(196,18,48,0.04) 0%, transparent 60%);
+  font-family: var(--ws-font);
+  color: var(--ws-ink);
+
+  /* Responsive padding: tight on small phones, generous on tablets */
+  padding:
+    clamp(20px, 5vw, 48px)
+    clamp(16px, 6vw, 32px)
+    clamp(32px, 8vw, 64px);
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ─── Inner content column ─────────────────────────────────────────────── */
+.ws-inner {
+  width: 100%;
+  max-width: 480px;   /* comfortable on tablet without feeling stretched */
+}
+
+/* ─── Slide container ───────────────────────────────────────────────────── */
+.ws-slide {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+/* Entrance animation */
+@keyframes ws-slide-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.ws-animate-in {
+  animation: ws-slide-up 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* ─── Progress bar ──────────────────────────────────────────────────────── */
+.ws-progress {
+  display: flex;
+  gap: 6px;
+  margin-bottom: clamp(18px, 4vw, 28px);
+}
+.ws-progress-bar {
+  flex: 1;
+  height: 4px;
+  border-radius: var(--ws-r-pill);
+  background: var(--ws-border);
+  transition: background 0.4s;
+}
+.ws-progress-bar--active {
+  background: linear-gradient(90deg, var(--ws-blue), var(--ws-blue-soft));
+}
+
+/* ─── Hero ──────────────────────────────────────────────────────────────── */
+.ws-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: clamp(10px, 2.5vw, 18px);
+  margin-bottom: clamp(18px, 4vw, 28px);
+}
+.ws-hero--compact {
+  gap: clamp(8px, 2vw, 12px);
+  margin-bottom: clamp(14px, 3vw, 22px);
+}
+
+/* ─── Logo ──────────────────────────────────────────────────────────────── */
+.ws-logo-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.ws-logo-glow {
+  position: absolute;
+  inset: -14px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(11,61,145,0.13) 0%, transparent 70%);
+  pointer-events: none;
+}
+.ws-logo {
+  /* Fluid size: 64 px on smallest phones → 88 px on tablets */
+  width:  clamp(64px, 18vw, 88px);
+  height: clamp(64px, 18vw, 88px);
+  object-fit: contain;
+  display: block;
+  border-radius: 50%;
+  filter: drop-shadow(0 4px 14px rgba(11,61,145,0.22));
+  position: relative;
+  z-index: 1;
+}
+.ws-logo--sm {
+  width:  clamp(48px, 13vw, 64px);
+  height: clamp(48px, 13vw, 64px);
+}
+
+/* ─── Hero text ─────────────────────────────────────────────────────────── */
+.ws-hero-text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.ws-eyebrow {
+  font-size: clamp(12px, 3vw, 14px);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--ws-blue-soft);
+  background: var(--ws-tint-blue);
+  padding: 5px 14px;
+  border-radius: var(--ws-r-pill);
+  display: inline-block;
+}
+
+.ws-title {
+  font-family: var(--ws-font-d);
+  font-size: clamp(22px, 6vw, 32px);
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--ws-ink);
+  letter-spacing: -0.4px;
+  margin: 0;
+}
+
+/* Gradient accent — Philippine flag blue→red with slow shimmer */
+.ws-title-accent {
+  background: linear-gradient(108deg, #0B3D91 0%, #1A56B0 35%, #9B2335 70%, #C41230 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-style: italic;
+  animation: ws-shimmer 7s ease-in-out infinite alternate;
+}
+@keyframes ws-shimmer {
+  from { background-position: 0% center; }
+  to   { background-position: 100% center; }
+}
+
+.ws-subtitle {
+  font-size: clamp(13px, 3.5vw, 15px);
+  color: var(--ws-ink-3);
+  font-weight: 500;
+  line-height: 1.6;
+  max-width: 300px;
+  margin: 0;
+}
+
+/* ─── Section label ─────────────────────────────────────────────────────── */
+.ws-section-label {
+  font-size: clamp(10px, 2.5vw, 12px);
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ws-ink-3);
+  margin-bottom: 10px;
+}
+
+/* ─── Option list (Slide 1) ─────────────────────────────────────────────── */
+.ws-options {
+  list-style: none;
+  margin: 0 0 clamp(14px, 3.5vw, 22px);
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(6px, 1.5vw, 10px);
+}
+
+@keyframes ws-option-in {
+  from { opacity: 0; transform: translateX(-8px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+.ws-option-item {
+  animation: ws-option-in 0.36s cubic-bezier(0.16,1,0.3,1) both;
+}
+
+.ws-option-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  /* Fluid vertical padding: tight on iPhone SE, comfortable on iPhone Pro */
+  padding: clamp(11px, 2.8vw, 15px) clamp(12px, 3vw, 16px);
+  background: var(--ws-card);
+  border: 1.5px solid var(--ws-border);
+  border-radius: var(--ws-r-md);
+  font-family: var(--ws-font);
+  font-size: clamp(13px, 3.5vw, 15px);
+  font-weight: 600;
+  color: var(--ws-ink-2);
+  text-align: left;
+  box-shadow: var(--ws-shadow-sm);
+}
+
+.ws-option-emoji {
+  width:  clamp(34px, 8.5vw, 42px);
+  height: clamp(34px, 8.5vw, 42px);
+  background: var(--ws-subtle);
+  border-radius: var(--ws-r-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: clamp(16px, 4vw, 20px);
+  flex-shrink: 0;
+}
+.ws-option-text { flex: 1; }
+.ws-option-arrow {
+  font-size: 18px;
+  color: var(--ws-ink-3);
+  opacity: 0.45;
+  line-height: 1;
+}
+
+/* ─── Trust row ─────────────────────────────────────────────────────────── */
+.ws-trust-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: clamp(14px, 3.5vw, 22px);
+  flex-wrap: wrap;
+}
+.ws-trust-badge {
+  font-size: clamp(11.5px, 2.8vw, 13px);
+  font-weight: 700;
+  color: var(--ws-ink-3);
+}
+.ws-trust-dot {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--ws-ink-3);
+  opacity: 0.4;
+}
+
+/* ─── CTA button ────────────────────────────────────────────────────────── */
+.ws-cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  /* Tall touch target: min 52 px, scales up on bigger screens */
+  padding: clamp(14px, 3.5vw, 17px) 24px;
+  border: none;
+  border-radius: var(--ws-r-lg);
+  font-family: var(--ws-font);
+  font-size: clamp(14.5px, 4vw, 16px);
+  font-weight: 800;
+  color: #fff;
+  cursor: pointer;
+  background: linear-gradient(105deg, var(--ws-blue) 0%, var(--ws-blue-soft) 50%, var(--ws-red) 100%);
+  background-size: 200% auto;
+  box-shadow: 0 4px 18px rgba(11,61,145,0.28), 0 1px 3px rgba(11,61,145,0.12);
+  transition: background-position 0.4s, transform 0.14s, box-shadow 0.2s;
+  letter-spacing: 0.01em;
+  /* Prevent button from shrinking on tiny screens */
+  min-height: 52px;
+}
+.ws-cta:hover {
+  background-position: right center;
+  box-shadow: 0 6px 26px rgba(11,61,145,0.34);
+  transform: translateY(-1px);
+}
+.ws-cta:active { transform: scale(0.98); }
+
+/* Disabled state (no selection yet on slide 2) */
+.ws-cta--disabled,
+.ws-cta:disabled {
+  background: var(--ws-subtle);
+  color: var(--ws-ink-3);
+  box-shadow: none;
+  cursor: not-allowed;
+  font-weight: 600;
+  transform: none !important;
+}
+
+.ws-cta-arrow {
+  font-size: 17px;
+  line-height: 1;
+  transition: transform 0.2s;
+}
+.ws-cta:not(:disabled):hover .ws-cta-arrow { transform: translateX(3px); }
+
+/* ─── Experience cards (Slide 2) ────────────────────────────────────────── */
+.ws-exp-cards {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(10px, 2.5vw, 14px);
+  margin-bottom: clamp(14px, 3.5vw, 22px);
+}
+
+.ws-exp-card {
+  width: 100%;
+  padding: clamp(13px, 3.2vw, 17px) clamp(13px, 3.2vw, 17px);
+  background: var(--ws-card);
+  border: 2px solid var(--ws-border);
+  border-radius: var(--ws-r-lg);
+  font-family: var(--ws-font);
+  text-align: left;
+  cursor: pointer;
+  box-shadow: var(--ws-shadow-sm);
+  transition: border-color 0.22s, box-shadow 0.22s, background 0.22s, transform 0.14s;
+}
+.ws-exp-card:hover:not(.ws-exp-card--on) {
+  border-color: #B4C6E8;
+  box-shadow: var(--ws-shadow-md);
+  transform: translateY(-1px);
+}
+.ws-exp-card--on {
+  border-color: var(--ws-blue);
+  background: var(--ws-tint-blue);
+  box-shadow: 0 0 0 4px rgba(11,61,145,0.09), var(--ws-shadow-md);
+}
+
+.ws-exp-card-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: clamp(10px, 2.5vw, 13px);
+}
+
+.ws-exp-emoji {
+  width:  clamp(40px, 10vw, 50px);
+  height: clamp(40px, 10vw, 50px);
+  border-radius: var(--ws-r-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: clamp(19px, 4.8vw, 23px);
+  flex-shrink: 0;
+}
+.ws-exp-emoji--tourist { background: var(--ws-tint-red); }
+.ws-exp-emoji--local   { background: var(--ws-tint-blue); }
+
+.ws-exp-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.ws-exp-tag {
+  font-size: clamp(10px, 2.5vw, 11px);
+  font-weight: 800;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: var(--ws-ink-3);
+}
+.ws-exp-name {
+  font-size: clamp(13px, 3.5vw, 15px);
+  font-weight: 700;
+  color: var(--ws-ink);
+  line-height: 1.25;
+  /* Prevent long text overflowing */
+  word-break: break-word;
+}
+
+/* Custom radio */
+.ws-radio-circle {
+  width: 22px;
+  height: 22px;
+  min-width: 22px;
+  border-radius: 50%;
+  border: 2px solid var(--ws-border);
+  background: var(--ws-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.2s, background 0.2s;
+}
+.ws-exp-card--on .ws-radio-circle {
+  border-color: var(--ws-blue);
+  background: var(--ws-blue);
+}
+.ws-radio-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #fff;
+  opacity: 0;
+  transform: scale(0.4);
+  transition: opacity 0.2s, transform 0.22s cubic-bezier(0.34,1.56,0.64,1);
+}
+.ws-exp-card--on .ws-radio-dot {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Feature list */
+.ws-feat-list {
+  list-style: none;
+  margin: 0;
+  padding: clamp(9px, 2.2vw, 12px) clamp(10px, 2.5vw, 13px);
+  background: rgba(255,255,255,0.65);
+  border-radius: var(--ws-r-sm);
+  border: 1px solid rgba(11,61,145,0.08);
+  display: flex;
+  flex-direction: column;
+  gap: clamp(5px, 1.5vw, 8px);
+}
+.ws-exp-card--on .ws-feat-list { background: rgba(255,255,255,0.78); }
+
+.ws-feat-list li {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: clamp(12px, 3vw, 13.5px);
+  font-weight: 500;
+  color: var(--ws-ink-2);
+  line-height: 1.4;
+}
+.ws-feat-check {
+  width: 18px;
+  height: 18px;
+  min-width: 18px;
+  border-radius: 50%;
+  background: var(--ws-tint-blue2);
+  color: var(--ws-blue);
+  font-size: 10px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, color 0.2s;
+}
+.ws-exp-card--on .ws-feat-check {
+  background: var(--ws-blue);
+  color: #fff;
+}
+
+/* ─── Sign-in link ──────────────────────────────────────────────────────── */
+.ws-signin {
+  text-align: center;
+  font-size: clamp(12.5px, 3vw, 14px);
+  font-weight: 500;
+  color: var(--ws-ink-3);
+  margin-top: clamp(12px, 3vw, 18px);
+}
+.ws-signin-link {
+  color: var(--ws-blue-soft);
+  font-weight: 700;
+  text-decoration: none;
+  border-bottom: 1.5px solid transparent;
+  transition: border-color 0.18s;
+}
+.ws-signin-link:hover { border-color: var(--ws-blue-soft); }
+
+/* ─── Tablet / large phone (≥ 600 px) ──────────────────────────────────── */
+@media (min-width: 600px) {
+  .ws-root {
+    padding-top: 48px;
+    padding-bottom: 64px;
+  }
+  .ws-inner { max-width: 500px; }
+  .ws-options { gap: 10px; }
+  .ws-exp-cards { gap: 16px; }
+}
+
+/* ─── Very small phones (≤ 360 px wide, e.g. iPhone SE) ────────────────── */
+@media (max-width: 360px) {
+  .ws-title        { font-size: 20px; }
+  .ws-hero         { gap: 8px; margin-bottom: 14px; }
+  .ws-hero--compact{ gap: 6px; margin-bottom: 12px; }
+  .ws-progress     { margin-bottom: 14px; }
+  .ws-option-card  { padding: 10px 11px; gap: 10px; }
+  .ws-exp-card     { padding: 11px; }
+  .ws-exp-card-top { gap: 10px; margin-bottom: 10px; }
+  .ws-cta          { font-size: 14px; min-height: 48px; }
+  .ws-feat-list    { gap: 5px; padding: 8px 10px; }
+}
+
+/* ─── Short screens (height ≤ 600 px, e.g. landscape phone) ────────────── */
+@media (max-height: 600px) {
+  .ws-hero         { gap: 8px; margin-bottom: 12px; }
+  .ws-hero--compact{ gap: 6px; margin-bottom: 10px; }
+  .ws-options      { gap: 6px; margin-bottom: 12px; }
+  .ws-exp-cards    { gap: 8px; margin-bottom: 12px; }
+  .ws-progress     { margin-bottom: 12px; }
+  .ws-cta          { min-height: 46px; padding: 12px 20px; }
+}
